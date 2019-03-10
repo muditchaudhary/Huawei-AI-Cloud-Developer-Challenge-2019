@@ -1,0 +1,59 @@
+{
+ //Model algorithm is image classification
+"model_algorithm": "image_classification",
+ //Model type is TensorFlow
+ "model_type": "TensorFlow",
+ //Model reference API, including the protocol, url, method, request API, and
+response API
+ "apis": [
+ {
+ "procotol": "http",
+ "url": "/",
+ "method": "post",
+ //Content type is multipart/form-data and key value is 'images'
+ "request": {
+ "Content-type": "multipart/form-data",
+ "data": {
+ "type": "object",
+ "properties": {
+ "images": {
+ "type": "file"
+ }
+ }
+ }
+ },
+ //Response format is json {'logits':{'label_a': 0.1, 'label_b': -0.12,
+'label_c': 0.72}}
+ "response": {
+ "Content-type": "applicaton/json",
+ "data": {
+ "type": "object",
+ "properties": {
+ "logits": {
+ "type": "object",
+ "properties": {
+ "label_a": {
+ "type": "number"
+ },
+ "label_b": {
+ "type": "number"
+ },
+ "label_c": {
+ "type": "number"
+ }
+ }
+ }
+ }
+ }
+ }
+ }
+ ],
+ //Model accuracy. It is for your own track of your different version of models.
+Not used for contest scoring system.
+ "metrics": {
+ "f1": 0.102058,
+ "recall": 0.9975,
+ "precision": 0.05378,
+ "accuracy": 1
+ }
+}
