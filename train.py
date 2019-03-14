@@ -13,12 +13,7 @@ from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.callbacks import ModelCheckpoint
 
-#GPU Memory Mangement
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-config.gpu_options.per_process_gpu_memory_fraction = 0.5
-config.gpu_options.visible_device_list = '0,1'
-tf.keras.backend.set_session(tf.Session(config=config))
+
 
 class Metrics(keras.callbacks.Callback):
     """
@@ -99,22 +94,6 @@ train_datagen = ImageDataGenerator(
 
 
 
-#Sanity check for augmentation
-
-img = load_img('datasets/large_sample/almond_desert/6350.jpg')  # this is a PIL image
-img=img.resize((28,28))
-x = img_to_array(img)  # this is a Numpy array with shape (3, 150, 150)
-print(x.shape)
-x = x.reshape((1,) + x.shape)  # this is a Numpy array with shape (1, 3, 150, 150)
-
-# the .flow() command below generates batches of randomly transformed images
-# and saves the results to the `preview/` directory
-i = 0
-for batch in train_datagen.flow(x, batch_size=1,
-                          save_to_dir='preview', save_prefix='almond_desert', save_format='jpeg'):
-    i += 1
-    if i > 20:
-        break  # otherwise the generator would loop indefinitely
 
 
 
@@ -153,25 +132,26 @@ x = tf.keras.layers.Dropout(0.4)(x)
 x=tf.keras.layers.Dense(75,activation ='softmax')(x)
 model = tf.keras.models.Model(model.input, x)
 
+
 model.compile(loss='categorical_crossentropy',
               optimizer=tf.keras.optimizers.SGD(lr=0.01)
               ,metrics=['accuracy'])
 
 
 checkpoint = ModelCheckpoint('model_resA.h5',monitor='val_acc',save_best_only=True,period=1,verbose=0)
-checkpointB = ModelCheckpoint('model_resB.h5', monitor='val_acc',save_best_only=True, period = 1,verbose=0)
+checkpointB = ModelCheckpoint('model_resB.h5', period = 1,verbose=0)
 print(model.summary())
 
 #model.load_weights('weights_resA.h5')
-history=model.fit_generator(train_generator,
-                   steps_per_epoch = 1800,
-                   epochs = 20, validation_data = val_generator, callbacks=[checkpoint,LRScheduler])
-file_pi = open('Train_histA',"wb")
-pickle.dump(history.history,file_pi)
-file_pi.close()
+#history=model.fit_generator(train_generator,
+#                   steps_per_epoch = 1800,
+#                   epochs = 20, validation_data = val_generator, callbacks=[checkpoint,LRScheduler])
+#file_pi = open('Train_histA',"wb")
+#pickle.dump(history.history,file_pi)
+#file_pi.close()
 
 #model = load_model('model_ResA.h5')
-
+model=load_model('model_resA.h5')
 img = load_img('datasets/large_sample/almond_desert/6350.jpg')  # this is a PIL image
 img=img.resize((150,150))
 x = img_to_array(img)  # this is a Numpy array with shape (3, 150, 150)
@@ -223,7 +203,7 @@ small_val_generator = val_datagen.flow_from_directory(
         subset = 'validation')
 
 
-for layer in model.layers:
+for layer in model.layers[:-4]:
     layer.trainable=False
 
 
@@ -236,17 +216,15 @@ for i,layer in enumerate(model.layers):
 model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
-new_model = tf.keras.models.Model(model.input, model.layers[-3].output)
+new_model = tf.keras.models.Model(model.input, model.layers[-5].output)
 
-
-
-new_model.summary()
-
-
+print(new_model.summary())
 
 y=new_model.output
 
-y= tf.keras.layers.GlobalAveragePooling2D(data_format='channels_last')(y)
+y = tf.keras.layers.GlobalAveragePooling2D(data_format='channels_last')(y) 
+y = tf.keras.layers.Dense(1024,activation='relu')(y)
+y = tf.keras.layers.Dropout(0.4)(y)
 y=tf.keras.layers.Dense(25,activation ='softmax')(y)
 
 new_model = tf.keras.models.Model(new_model.input, y)
@@ -257,24 +235,24 @@ new_model.compile(loss='categorical_crossentropy',
 
 
 
-new_model.summary()
+#new_model.summary()
 
 
 
 for i,layer in enumerate(model.layers):
   print(i,layer.trainable)
 
+new_model = load_model('model_resB.h5')
+
+#historyB=new_model.fit_generator(small_train_generator,
+#                   steps_per_epoch =7,
+ #                  epochs = 10, validation_data = small_val_generator,callbacks=[checkpointB])
+##file_pi = open('Train_histB',"wb")
+#pickle.dump(historyB.history, file_pi)
+#file_pi.close()
 
 
-historyB=new_model.fit_generator(small_train_generator,
-                   steps_per_epoch =2,
-                   epochs = 2, validation_data = small_val_generator,callbacks=[checkpointB])
-file_pi = open('Train_histB',"wb")
-pickle.dump(historyB.history, file_pi)
-file_pi.close()
-
-
-img = load_img('datasets/small_sample/black_rice_cake/10585.jpg')  # this is a PIL image
+img = load_img('datasets/small_sample/stir_fried_lettuce/6581.jpg')  # this is a PIL image
 img=img.resize((150,150))
 x = img_to_array(img)  # this is a Numpy array with shape (3, 150, 150)
 x = x.reshape((1,) + x.shape)  # this is a Numpy array with shape (1, 3, 150, 150)
@@ -290,4 +268,5 @@ y = new_model.predict(x)
 
 
 print(y)
+print(labelsSmall[np.argmax(y)])
 
