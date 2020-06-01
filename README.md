@@ -5,10 +5,7 @@ Developed By: Mudit Chaudhary and Arjun Rao - The Chinese University of Hong Kon
 # Dataset Provided :
  * Food images classified into 75 "large categories" - each containing up to 1000 images each category.
  * 25 small categories - containing 5 images per category
- 
- 
-![alt text](https://drive.google.com/open?id=1pBE2MA9OdyjXmRwHXwoT2IbzqFn4aY4S)
- 
+  
 # Solution used : Deep Residual Network with Transfer Learning (ResNet-50)
 
 * Data augmenation was used to enhance
