@@ -1,6 +1,6 @@
 # Recognising classic Hong Kong style dishes using Transfer Learning with Residual Neural Network
 
-Developed By: Arjun Rao and Mudit Chaudhary - The Chinese University of Hong Kong
+Developed By: Mudit Chaudhary and Arjun Rao - The Chinese University of Hong Kong
 
 # Dataset Provided :
  * Food images classified into 75 "large categories" - each containing up to 1000 images each category.
